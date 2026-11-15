@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf } from '../lib/logic.js';
+import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf, canFormTeam, unassignedPlayers, customGroupNames, groupWarnings } from '../lib/logic.js';
+import { validate } from '../lib/store.js';
 import { SEED_ENTRY } from '../lib/seed.js';
 
 const ids = SEED_ENTRY.snapshot.teams.map((t) => t.id);
@@ -73,4 +74,27 @@ assert.deepEqual(groupCaps(7, 3), [3, 2, 2]);
 assert.deepEqual(seedOrder(4), [1, 4, 2, 3]);
 assert.equal(resolveBracket(makeBracket(['a', 'b', 'c', 'd'], 3)).length, 2);
 assert.equal(ruleCfg({}).pointsPerGame, 20);
+
+// custom team & group management
+const cs = {
+  settings: { teamSize: 2, groupSize: 3 },
+  players: ['a', 'b', 'c', 'd', 'e'].map((id) => ({ id, name: id.toUpperCase() })),
+  teams: [{ id: 't1', name: '', playerIds: ['a', 'b'], group: 'A' }],
+  draft: ['e'],
+};
+assert.deepEqual(unassignedPlayers(cs).map((p) => p.id), ['c', 'd']);
+assert.equal(canFormTeam(cs, ['c', 'd']), null);
+assert.match(canFormTeam(cs, ['c']), /exactly 2/);
+assert.match(canFormTeam(cs, ['c', 'c']), /twice/);
+assert.match(canFormTeam(cs, ['a', 'c']), /already in/);
+assert.match(canFormTeam(cs, ['e', 'c']), /draft/);
+assert.equal(canFormTeam(cs, ['a', 'c'], 't1'), null); // editing t1 may keep its own player
+assert.match(canFormTeam(cs, ['c', 'zz']), /Unknown/);
+const four = { ...cs, teams: ['1', '2', '3', '4', '5', '6', '7'].map((i) => ({ id: i, playerIds: [], group: null })) };
+assert.deepEqual(customGroupNames(four), ['A', 'B', 'C']);
+four.teams[0].group = 'A';
+assert.ok(groupWarnings(four).some((w) => w.group === 'A' && /at least 2/.test(w.msg)));
+assert.equal(validate({ players: [], teams: [], matches: [] }).settings.assignMode, 'spin');
+assert.equal(validate({ players: [], teams: [], matches: [], settings: { assignMode: 'custom' } }).settings.assignMode, 'custom');
+console.log('✓ custom team/group helpers + assignMode default');
 console.log('all logic tests passed');

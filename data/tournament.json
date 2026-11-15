@@ -2,6 +2,7 @@
   "version": 1,
   "settings": {
     "format": "league",
+    "assignMode": "custom",
     "teamSize": 2,
     "groupSize": 3,
     "advancePerGroup": 2,
@@ -80,20 +81,9 @@
       ],
       "group": null,
       "locked": true
-    },
-    {
-      "id": "t7bp1i6ufh",
-      "name": "",
-      "playerIds": [
-        "p_himel",
-        "p_mashud"
-      ],
-      "group": null
     }
   ],
-  "draft": [
-    "p_hadi"
-  ],
+  "draft": [],
   "stage": "setup",
   "matches": [],
   "bracket": null,
@@ -1543,6 +1533,499 @@
             "t1": "tr24d9a1ro",
             "t2": "ti7q4lg7a9",
             "all": true,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "bracket": null,
+        "seeded": true
+      }
+    },
+    {
+      "id": "hfhcxlvye1",
+      "title": "6-team league tournament",
+      "date": "15 Nov 2026",
+      "champion": null,
+      "members": "",
+      "runnerUp": "",
+      "teams": 6,
+      "format": "League",
+      "note": "Reset during the group stage",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "format": "league",
+          "assignMode": "custom",
+          "teamSize": 2,
+          "groupSize": 3,
+          "advancePerGroup": 2,
+          "qualifiers": 4,
+          "gamesPerMatch": 3,
+          "knockoutGames": 3,
+          "playAll": true,
+          "allowDraw": false,
+          "pointsPerGame": 20,
+          "winByTwo": false,
+          "checkScores": true,
+          "pointSystem": "games",
+          "pointPreset": "games",
+          "ptsWin": 2,
+          "ptsDraw": 1,
+          "ptsLoss": 0,
+          "tiebreak": "classic"
+        },
+        "players": [
+          {
+            "id": "p_sayem",
+            "name": "Sayem"
+          },
+          {
+            "id": "p_mosaraf",
+            "name": "Mosaraf"
+          },
+          {
+            "id": "p_oli",
+            "name": "Oli"
+          },
+          {
+            "id": "p_himel",
+            "name": "Himel"
+          },
+          {
+            "id": "p_mahabub",
+            "name": "Mahabub"
+          },
+          {
+            "id": "p_hadi",
+            "name": "Hadi"
+          },
+          {
+            "id": "p_tayef",
+            "name": "Tayef"
+          },
+          {
+            "id": "p_ridoy",
+            "name": "Ridoy"
+          },
+          {
+            "id": "p_shaikat",
+            "name": "Shaikat"
+          },
+          {
+            "id": "p_mashud",
+            "name": "Mashud"
+          },
+          {
+            "id": "p_sani",
+            "name": "Sani"
+          },
+          {
+            "id": "p_joy",
+            "name": "Joy"
+          }
+        ],
+        "teams": [
+          {
+            "id": "t_default",
+            "name": "",
+            "playerIds": [
+              "p_sayem",
+              "p_mosaraf"
+            ],
+            "group": null,
+            "locked": true
+          },
+          {
+            "id": "t7bp1i6ufh",
+            "name": "",
+            "playerIds": [
+              "p_himel",
+              "p_mashud"
+            ],
+            "group": null
+          },
+          {
+            "id": "thj8m2a1d0",
+            "name": "",
+            "playerIds": [
+              "p_oli",
+              "p_mahabub"
+            ],
+            "group": null
+          },
+          {
+            "id": "tp4nnmv4tw",
+            "name": "",
+            "playerIds": [
+              "p_hadi",
+              "p_ridoy"
+            ],
+            "group": null
+          },
+          {
+            "id": "t0gus4ga7t",
+            "name": "",
+            "playerIds": [
+              "p_tayef",
+              "p_shaikat"
+            ],
+            "group": null
+          },
+          {
+            "id": "tzfo7r9c76",
+            "name": "",
+            "playerIds": [
+              "p_sani",
+              "p_joy"
+            ],
+            "group": null
+          }
+        ],
+        "draft": [],
+        "stage": "group",
+        "matches": [
+          {
+            "id": "mjd6a3umi9",
+            "group": null,
+            "round": 1,
+            "t1": "t_default",
+            "t2": "tzfo7r9c76",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "mxngu50mi9",
+            "group": null,
+            "round": 1,
+            "t1": "t7bp1i6ufh",
+            "t2": "t0gus4ga7t",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m9lvucpmi9",
+            "group": null,
+            "round": 1,
+            "t1": "thj8m2a1d0",
+            "t2": "tp4nnmv4tw",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "ms7yyv9mi9",
+            "group": null,
+            "round": 2,
+            "t1": "t0gus4ga7t",
+            "t2": "t_default",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m2loc0wmi9",
+            "group": null,
+            "round": 2,
+            "t1": "tp4nnmv4tw",
+            "t2": "tzfo7r9c76",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m9c7divmi9",
+            "group": null,
+            "round": 2,
+            "t1": "thj8m2a1d0",
+            "t2": "t7bp1i6ufh",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "mo8lvjvmi9",
+            "group": null,
+            "round": 3,
+            "t1": "t_default",
+            "t2": "tp4nnmv4tw",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "mu7vg3omi9",
+            "group": null,
+            "round": 3,
+            "t1": "t0gus4ga7t",
+            "t2": "thj8m2a1d0",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "mcn36llmi9",
+            "group": null,
+            "round": 3,
+            "t1": "tzfo7r9c76",
+            "t2": "t7bp1i6ufh",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m55qiv0mi9",
+            "group": null,
+            "round": 4,
+            "t1": "thj8m2a1d0",
+            "t2": "t_default",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m35e8i0mi9",
+            "group": null,
+            "round": 4,
+            "t1": "t7bp1i6ufh",
+            "t2": "tp4nnmv4tw",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m6927etmi9",
+            "group": null,
+            "round": 4,
+            "t1": "tzfo7r9c76",
+            "t2": "t0gus4ga7t",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "muoyhsomi9",
+            "group": null,
+            "round": 5,
+            "t1": "t_default",
+            "t2": "t7bp1i6ufh",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "mcarlmvmi9",
+            "group": null,
+            "round": 5,
+            "t1": "thj8m2a1d0",
+            "t2": "tzfo7r9c76",
+            "all": true,
+            "draw": false,
+            "games": [
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ],
+              [
+                null,
+                null
+              ]
+            ]
+          },
+          {
+            "id": "m86jukbmi9",
+            "group": null,
+            "round": 5,
+            "t1": "tp4nnmv4tw",
+            "t2": "t0gus4ga7t",
+            "all": true,
+            "draw": false,
             "games": [
               [
                 null,

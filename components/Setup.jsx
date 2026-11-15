@@ -4,12 +4,14 @@ import * as L from '../lib/logic';
 import WheelCanvas from './WheelCanvas';
 import { Art, Avatars, Icon, members } from './ui';
 import RulesSummary from './RulesSummary';
+import CustomManager from './CustomManager';
 
 export default function Setup({ S, ui, A }) {
   const locked = S.stage !== 'setup';
   const s = S.settings;
   const c = L.ruleCfg(s);
   const isGroups = s.format === 'groups';
+  const custom = s.assignMode === 'custom';
   const mode = isGroups ? ui.mode : 'players';
   const wheelRef = useRef(null);
   const angleRef = useRef(0);
@@ -112,6 +114,15 @@ export default function Setup({ S, ui, A }) {
               <button className="btn primary lg" onClick={A.start}><Icon name="play" />Start Tournament</button>
             </section>
 
+            <section className="card">
+              <div className="rs-title" style={{ marginTop: 0 }}>Team &amp; group assignment</div>
+              <div className="seg">
+                <button className={!custom ? 'on' : ''} onClick={() => A.setAssignMode('spin')}><Icon name="zap" size={15} />Spin (default)</button>
+                <button className={custom ? 'on' : ''} onClick={() => A.setAssignMode('custom')}><Icon name="pencil" size={15} />Custom</button>
+              </div>
+            </section>
+
+            {custom ? <CustomManager S={S} A={A} /> : (
             <section className="card wheel-card">
               <div className="card-h">
                 <h2><Art name="wheel" size={30} />Lucky Spinner</h2>
@@ -173,6 +184,7 @@ export default function Setup({ S, ui, A }) {
                 </>
               )}
             </section>
+            )}
           </>
         )}
       </div>
@@ -181,7 +193,7 @@ export default function Setup({ S, ui, A }) {
         <section className="card">
           <div className="card-h"><h2><Art name="users" size={30} />Teams <span className="badge em">{S.teams.length}</span></h2></div>
           {!S.teams.length ? (
-            <div className="empty">No teams yet — spin the wheel to build some</div>
+            <div className="empty">{custom ? 'No teams yet — build one in Custom Teams' : 'No teams yet — spin the wheel to build some'}</div>
           ) : isGroups ? (
             <>
               {groupNames.map((g) => (

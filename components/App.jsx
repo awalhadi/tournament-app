@@ -108,10 +108,17 @@ export default function App() {
   };
 
   const A = useMemo(() => {
-    const makeTeam = (d, ids) => {
-      const t = { id: L.uid('t'), name: '', playerIds: [...ids], group: null };
+    // Team list changed. Spin mode: regroup from scratch. Custom mode: keep deliberate manual
+    // placements, only drop those pointing at a group letter that no longer exists.
+    const regroup = (d) => {
+      if (d.settings.assignMode !== 'custom') return d.teams.forEach((x) => (x.group = null));
+      const valid = new Set(L.customGroupNames(d));
+      d.teams.forEach((x) => { if (x.group && !valid.has(x.group)) x.group = null; });
+    };
+    const makeTeam = (d, ids, name = '') => {
+      const t = { id: L.uid('t'), name, playerIds: [...ids], group: null };
       d.teams.push(t);
-      d.teams.forEach((x) => (x.group = null)); // team list changed → regroup
+      regroup(d);
       return t;
     };
     // When only one outcome is left, finish it without another spin.
@@ -196,7 +203,7 @@ export default function App() {
           d.draft = d.draft.filter((x) => x !== id);
           d.teams.forEach((t) => (t.playerIds = t.playerIds.filter((x) => x !== id)));
           d.teams = d.teams.filter((t) => t.playerIds.length);
-          d.teams.forEach((t) => (t.group = null));
+          regroup(d);
         }),
 
       pick: (mode, item) => {
@@ -263,7 +270,41 @@ export default function App() {
       delTeam: (id) =>
         mutate((d) => {
           d.teams = d.teams.filter((t) => t.id !== id);
-          d.teams.forEach((t) => (t.group = null));
+          regroup(d);
+        }),
+
+      /* ---- custom (manual) mode ---- */
+      setAssignMode: (mode) =>
+        mutate((d) => {
+          if (d.stage !== 'setup') return;
+          d.settings.assignMode = mode === 'custom' ? 'custom' : 'spin';
+          d.draft = []; // an unfinished spin draft doesn't carry across modes
+        }),
+      createTeam: (playerIds, name) => {
+        const err = L.canFormTeam(Sref.current, playerIds);
+        if (Sref.current.stage !== 'setup') return false;
+        if (err) { toast(err, 'err'); return false; }
+        mutate((d) => makeTeam(d, playerIds, (name || '').trim()));
+        return true;
+      },
+      updateTeam: (id, { name, playerIds }) => {
+        const cur = Sref.current;
+        const t = L.getTeam(cur, id);
+        if (cur.stage !== 'setup' || !t || t.locked) return false;
+        const err = L.canFormTeam(cur, playerIds, id);
+        if (err) { toast(err, 'err'); return false; }
+        mutate((d) => {
+          const x = L.getTeam(d, id);
+          x.name = (name || '').trim();
+          x.playerIds = [...playerIds];
+        });
+        return true;
+      },
+      assignGroup: (teamId, letter) =>
+        mutate((d) => {
+          const t = L.getTeam(d, teamId);
+          if (d.stage !== 'setup' || !t) return;
+          t.group = letter && L.customGroupNames(d).includes(letter) ? letter : null;
         }),
       renameTeam: (id) => {
         const t = L.getTeam(Sref.current, id);
