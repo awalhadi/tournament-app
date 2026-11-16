@@ -1,13 +1,14 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as L from '../lib/logic';
-import { exportJSON, freshState, load, loadRemote, onSync, save, validate } from '../lib/store';
+import { exportJSON, freshState, load, loadRemote, onDenied, onSync, save, setMaster, validate } from '../lib/store';
 import { Art, ArtDefs, Icon, Logo, members, tn } from './ui';
 import Setup from './Setup';
 import Players from './Players';
 import { Bracket, Fixtures } from './Matches';
 import { Standings } from './Standings';
 import History from './History';
+import MasterPrompt from './MasterPrompt';
 
 const fresh = (d, history) => ({ ...freshState(d.settings, history, d.players), seeded: true });
 
@@ -32,12 +33,36 @@ function makeEntry(d) {
 
 const tabFor = (S) => (S.stage === 'setup' ? 'setup' : S.stage === 'group' ? 'fixtures' : 'bracket');
 
+const UNLOCK_MS = 5 * 60 * 1000;
+
+/** Normalise raw input to null | integer 0..99. */
+function parseScore(raw) {
+  let val = raw === '' ? null : parseInt(raw, 10);
+  if (Number.isNaN(val)) val = null;
+  if (val !== null) val = Math.max(0, Math.min(99, val));
+  return val;
+}
+
+/** Write one score into a (cloned) state; a changed knockout winner clears the rounds after it. */
+function applyScore(d, id, ko, g, s, val) {
+  if (ko) {
+    const before = L.resolveBracket(d.bracket).flat().find((m) => m.id === id);
+    d.bracket.rounds[before.r][before.i].games[g][s] = val;
+    const after = L.resolveBracket(d.bracket)[before.r][before.i];
+    if (after.winner !== before.winner) L.clearDownstream(d.bracket, before.r, before.i);
+  } else {
+    d.matches.find((m) => m.id === id).games[g][s] = val;
+  }
+}
+
 export default function App() {
   const [S, setS] = useState(null);
   const Sref = useRef(null);
   const [ui, setUi] = useState({ tab: 'setup', mode: 'players', filter: 'all', lastPick: null, histView: null, histTab: 'standings' });
   const [toasts, setToasts] = useState([]);
   const [modal, setModal] = useState(null);
+  const [pwPrompt, setPwPrompt] = useState(null);
+  const unlocked = useRef(new Map()); // match id -> unlock expiry (memory only)
   const fileRef = useRef(null);
 
   // load persisted JSON once on the client
@@ -106,6 +131,19 @@ export default function App() {
     modal?.resolve(v);
     setModal(null);
   };
+
+  // The server refused a score edit (missing/expired master password): drop the local change, show the saved data.
+  useEffect(() => {
+    onDenied(async (code) => {
+      toast(code === 'too_many_attempts' ? 'Too many wrong attempts. Try again later.' : 'Score change refused: master password required', 'err');
+      const remote = await loadRemote();
+      if (remote.data) {
+        Sref.current = remote.data;
+        setS(remote.data);
+        save(remote.data);
+      }
+    });
+  }, [toast]);
 
   const A = useMemo(() => {
     // Team list changed. Spin mode: regroup from scratch. Custom mode: keep deliberate manual
@@ -363,19 +401,29 @@ export default function App() {
         go('fixtures');
       },
       setScore: (id, ko, g, s, raw) => {
-        let val = raw === '' ? null : parseInt(raw, 10);
-        if (Number.isNaN(val)) val = null;
-        if (val !== null) val = Math.max(0, Math.min(99, val));
-        mutate((d) => {
-          if (ko) {
-            const before = L.resolveBracket(d.bracket).flat().find((m) => m.id === id);
-            d.bracket.rounds[before.r][before.i].games[g][s] = val;
-            const after = L.resolveBracket(d.bracket)[before.r][before.i];
-            if (after.winner !== before.winner) L.clearDownstream(d.bracket, before.r, before.i);
-          } else {
-            d.matches.find((m) => m.id === id).games[g][s] = val;
-          }
-        });
+        const val = parseScore(raw);
+        mutate((d) => applyScore(d, id, ko, g, s, val));
+      },
+      // Entry point for score inputs. First entry is free; changing/clearing a saved score needs the master password.
+      commitScore: async (id, ko, g, s, raw) => {
+        const val = parseScore(raw);
+        const cur = Sref.current;
+        const sim = structuredClone(cur);
+        try { applyScore(sim, id, ko, g, s, val); } catch { return; }
+        const edited = L.findScoreEdits(cur, sim); // same rule the server enforces
+        if (!edited.length) return mutate((d) => applyScore(d, id, ko, g, s, val));
+        if (!edited.every((m) => (unlocked.current.get(m) || 0) > Date.now())) {
+          const also = edited.filter((m) => m !== id).length;
+          const pw = await new Promise((resolve) =>
+            setPwPrompt({ resolve, warn: also ? 'Changing this result also clears the dependent knockout scores.' : '' })
+          );
+          setPwPrompt(null);
+          if (!pw) return; // cancelled → cell falls back to the saved value
+          setMaster(pw, UNLOCK_MS);
+          edited.forEach((m) => unlocked.current.set(m, Date.now() + UNLOCK_MS));
+          toast('Unlocked for 5 minutes');
+        }
+        mutate((d) => applyScore(d, id, ko, g, s, val));
       },
       finish: () => {
         const d = Sref.current;
@@ -495,6 +543,8 @@ export default function App() {
       <div className="toasts">
         {toasts.map((t) => (<div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>))}
       </div>
+
+      {pwPrompt && <MasterPrompt warn={pwPrompt.warn} onDone={(pw) => pwPrompt.resolve(pw)} />}
 
       {modal && (
         <div className="modal" onClick={(e) => e.target === e.currentTarget && closeModal(false)}>

@@ -1,5 +1,5 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as L from '../lib/logic';
 import { Art, Icon, Empty, members, pad, tn } from './ui';
 
@@ -8,6 +8,37 @@ export function infoMap(S) {
   S.matches.forEach((x) => m.set(x.id, { ...x, ev: L.evalMatch(x.games, x.all, x.draw), ready: true }));
   if (S.bracket) L.resolveBracket(S.bracket).flat().forEach((x) => m.set(x.id, { ...x, all: S.bracket.all }));
   return m;
+}
+
+/** Score input. Keeps a local draft and commits on blur/Enter, so a multi-digit score is one save. */
+function ScoreCell({ className, stored, disabled, label, onCommit }) {
+  const [draft, setDraft] = useState(null);
+  const skip = useRef(false);
+  const saved = stored != null;
+  const commit = () => {
+    if (skip.current) { skip.current = false; return setDraft(null); }
+    if (draft === null) return;
+    Promise.resolve(onCommit(draft)).finally(() => setDraft(null));
+  };
+  return (
+    <input
+      className={className + (saved && !disabled ? ' saved' : '')}
+      type="number"
+      inputMode="numeric"
+      min="0"
+      max="99"
+      disabled={disabled}
+      value={draft !== null ? draft : stored ?? ''}
+      title={saved && !disabled ? 'Saved score – master password required to change it' : undefined}
+      aria-label={label}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+        else if (e.key === 'Escape') { skip.current = true; e.currentTarget.blur(); }
+      }}
+    />
+  );
 }
 
 export function MatchCard({ S, info, ko, label, badge, onScore, readOnly }) {
@@ -30,17 +61,13 @@ export function MatchCard({ S, info, ko, label, badge, onScore, readOnly }) {
     else if (issues[g]) cls.push('warn');
     if (st === 'skipped') cls.push('skip');
     return (
-      <input
+      <ScoreCell
         key={`${g}-${s}`}
         className={cls.join(' ')}
-        type="number"
-        inputMode="numeric"
-        min="0"
-        max="99"
+        stored={games[g][s]}
         disabled={!ready || readOnly}
-        value={games[g][s] ?? ''}
-        aria-label={`Game ${g + 1} score`}
-        onChange={(e) => onScore(info.id, ko, g, s, e.target.value)}
+        label={`Game ${g + 1} score`}
+        onCommit={(raw) => onScore(info.id, ko, g, s, raw)}
       />
     );
   };
@@ -179,7 +206,7 @@ export function Fixtures({ S, ui, A, readOnly }) {
       <div className="matches">
         {list.length ? (
           list.map((m) => (
-            <MatchCard key={m.id} S={S} info={map.get(m.id)} ko={false} label={'Match ' + pad(idx.get(m.id))} badge={m.group ? `Group ${m.group}` : null} onScore={A.setScore} readOnly={readOnly} />
+            <MatchCard key={m.id} S={S} info={map.get(m.id)} ko={false} label={'Match ' + pad(idx.get(m.id))} badge={m.group ? `Group ${m.group}` : null} onScore={A.commitScore} readOnly={readOnly} />
           ))
         ) : (
           <div className="empty">Nothing here</div>
@@ -248,7 +275,7 @@ export function Bracket({ S, A, readOnly }) {
             <div className="round" key={r}>
               <div className="round-h">{name}</div>
               {round.map((m) => (
-                <MatchCard key={m.id} S={S} info={map.get(m.id)} ko label={round.length > 1 ? `${name} ${m.i + 1}` : name} onScore={A.setScore} readOnly={readOnly} />
+                <MatchCard key={m.id} S={S} info={map.get(m.id)} ko label={round.length > 1 ? `${name} ${m.i + 1}` : name} onScore={A.commitScore} readOnly={readOnly} />
               ))}
             </div>
           );

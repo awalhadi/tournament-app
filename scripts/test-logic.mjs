@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf, canFormTeam, unassignedPlayers, customGroupNames, groupWarnings } from '../lib/logic.js';
+import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf, canFormTeam, unassignedPlayers, customGroupNames, groupWarnings, findScoreEdits } from '../lib/logic.js';
+import { checkMaster, isLocked, recordFailure, clearFailures } from '../lib/master.js';
 import { validate } from '../lib/store.js';
 import { SEED_ENTRY } from '../lib/seed.js';
 
@@ -98,3 +99,38 @@ assert.equal(validate({ players: [], teams: [], matches: [] }).settings.assignMo
 assert.equal(validate({ players: [], teams: [], matches: [], settings: { assignMode: 'custom' } }).settings.assignMode, 'custom');
 console.log('✓ custom team/group helpers + assignMode default');
 console.log('all logic tests passed');
+
+// master password: which changes count as "editing a saved score"
+{
+  const mk = (games, bracketGames) => ({
+    matches: [{ id: 'm1', games }, { id: 'm2', games: [[null, null]] }],
+    bracket: bracketGames ? { rounds: [[{ id: 'k0_0', games: bracketGames }], [{ id: 'k1_0', games: [[null, null]] }]] } : null,
+  });
+  const base = mk([[11, 7], [null, null]]);
+  assert.deepEqual(findScoreEdits(base, mk([[11, 7], [null, null]])), [], 'unchanged is free');
+  assert.deepEqual(findScoreEdits(base, mk([[11, 7], [11, 5]])), [], 'first entry in an empty game is free');
+  assert.deepEqual(findScoreEdits(mk([[null, null]]), mk([[11, 7]])), [], 'first entry is free');
+  assert.deepEqual(findScoreEdits(base, mk([[11, 9], [null, null]])), ['m1'], 'changed saved score');
+  assert.deepEqual(findScoreEdits(base, mk([[null, null], [null, null]])), ['m1'], 'cleared saved score');
+  assert.deepEqual(findScoreEdits(mk([[1, 0]], [[11, 3]]), mk([[1, 0]], [[3, 11]])), ['k0_0'], 'knockout edit');
+  const reordered = { ...base, matches: [...base.matches].reverse() };
+  assert.deepEqual(findScoreEdits(base, reordered), [], 'order change is not an edit');
+  assert.deepEqual(findScoreEdits(base, { matches: [{ id: 'm9', games: [[5, 5]] }], bracket: null }), [], 'removed/new matches are structural');
+  assert.deepEqual(findScoreEdits(null, base), [], 'no previous document');
+  console.log('✓ findScoreEdits: first entry free, saved-score edits flagged');
+
+  const prod = { NODE_ENV: 'production', MASTER_PASSWORD: '51234' };
+  assert.equal(checkMaster('51234', prod).ok, true);
+  assert.equal(checkMaster('0000', prod).error, 'master_password_invalid');
+  assert.equal(checkMaster('', prod).error, 'master_password_required');
+  assert.equal(checkMaster(null, prod).status, 403);
+  assert.equal(checkMaster('x', { NODE_ENV: 'production' }).status, 503, 'prod without env fails closed');
+  assert.equal(checkMaster('x', { NODE_ENV: 'development' }).ok, true, 'dev without env allowed');
+  const t = 1_000_000;
+  for (let i = 0; i < 5; i++) recordFailure('k', t + i);
+  assert.equal(isLocked('k', t + 10), true);
+  assert.equal(isLocked('k', t + 6 * 60 * 1000), false, 'lock expires');
+  clearFailures('k');
+  assert.equal(isLocked('k', t + 10), false);
+  console.log('✓ master password check + attempt lockout');
+}
