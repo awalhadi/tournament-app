@@ -619,6 +619,8 @@ __turbopack_context__.s([
     ()=>emptyGames,
     "evalMatch",
     ()=>evalMatch,
+    "findProtectedChanges",
+    ()=>findProtectedChanges,
     "findScoreEdits",
     ()=>findScoreEdits,
     "getTeam",
@@ -635,6 +637,8 @@ __turbopack_context__.s([
     ()=>letters,
     "makeBracket",
     ()=>makeBracket,
+    "needsMaster",
+    ()=>needsMaster,
     "playerName",
     ()=>playerName,
     "pow2floor",
@@ -1239,6 +1243,20 @@ function findScoreEdits(prev, next) {
     }
     return edited;
 }
+function findProtectedChanges(prev, next) {
+    if (!prev || !next) return {
+        scores: [],
+        reset: false,
+        historyRemoved: []
+    };
+    const nextIds = new Set((next.history || []).map((h)=>h?.id));
+    return {
+        scores: findScoreEdits(prev, next),
+        reset: !!prev.stage && prev.stage !== 'setup' && next.stage === 'setup',
+        historyRemoved: (prev.history || []).map((h)=>h?.id).filter((id)=>id && !nextIds.has(id))
+    };
+}
+const needsMaster = (c)=>!!(c && (c.scores.length || c.reset || c.historyRemoved.length));
 function championOf(state) {
     if (!state.bracket) return null;
     const res = resolveBracket(state.bracket);

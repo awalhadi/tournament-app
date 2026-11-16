@@ -73,19 +73,409 @@
   ],
   "teams": [
     {
-      "id": "t_default",
+      "id": "tz8bv73xt8",
+      "name": "",
+      "playerIds": [
+        "p_hadi",
+        "p_ridoy"
+      ],
+      "group": null
+    },
+    {
+      "id": "t2sriv3eye",
       "name": "",
       "playerIds": [
         "p_sayem",
+        "p_oli"
+      ],
+      "group": null
+    },
+    {
+      "id": "t2qn28go9l",
+      "name": "",
+      "playerIds": [
+        "p_shaikat",
+        "p_sani"
+      ],
+      "group": null
+    },
+    {
+      "id": "td70qqc1vf",
+      "name": "",
+      "playerIds": [
+        "p_tayef",
         "p_mosaraf"
       ],
-      "group": null,
-      "locked": true
+      "group": null
+    },
+    {
+      "id": "tjsw6qigky",
+      "name": "",
+      "playerIds": [
+        "p_himel",
+        "p_mahabub"
+      ],
+      "group": null
+    },
+    {
+      "id": "t3e15baivf",
+      "name": "",
+      "playerIds": [
+        "p_mashud",
+        "p_joy"
+      ],
+      "group": null
     }
   ],
   "draft": [],
-  "stage": "setup",
-  "matches": [],
+  "stage": "group",
+  "matches": [
+    {
+      "id": "m37kzedkyi",
+      "group": null,
+      "round": 1,
+      "t1": "tz8bv73xt8",
+      "t2": "t3e15baivf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          21,
+          16
+        ],
+        [
+          22,
+          20
+        ],
+        [
+          18,
+          21
+        ]
+      ]
+    },
+    {
+      "id": "mt0p0qnkyi",
+      "group": null,
+      "round": 1,
+      "t1": "t2sriv3eye",
+      "t2": "tjsw6qigky",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "myuddmykyi",
+      "group": null,
+      "round": 1,
+      "t1": "t2qn28go9l",
+      "t2": "td70qqc1vf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "mkmbdlikyi",
+      "group": null,
+      "round": 2,
+      "t1": "tjsw6qigky",
+      "t2": "tz8bv73xt8",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "madsip6kyi",
+      "group": null,
+      "round": 2,
+      "t1": "td70qqc1vf",
+      "t2": "t3e15baivf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          14,
+          21
+        ],
+        [
+          18,
+          21
+        ],
+        [
+          19,
+          21
+        ]
+      ]
+    },
+    {
+      "id": "mmn08ftkyi",
+      "group": null,
+      "round": 2,
+      "t1": "t2qn28go9l",
+      "t2": "t2sriv3eye",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          21,
+          16
+        ],
+        [
+          21,
+          7
+        ],
+        [
+          21,
+          16
+        ]
+      ]
+    },
+    {
+      "id": "mik14e6kyi",
+      "group": null,
+      "round": 3,
+      "t1": "tz8bv73xt8",
+      "t2": "td70qqc1vf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "m8y9ammkyi",
+      "group": null,
+      "round": 3,
+      "t1": "tjsw6qigky",
+      "t2": "t2qn28go9l",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "m61oxn0kyi",
+      "group": null,
+      "round": 3,
+      "t1": "t3e15baivf",
+      "t2": "t2sriv3eye",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "miv8lcekyi",
+      "group": null,
+      "round": 4,
+      "t1": "t2qn28go9l",
+      "t2": "tz8bv73xt8",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "mi7zzoqkyi",
+      "group": null,
+      "round": 4,
+      "t1": "t2sriv3eye",
+      "t2": "td70qqc1vf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "mebjb64kyi",
+      "group": null,
+      "round": 4,
+      "t1": "t3e15baivf",
+      "t2": "tjsw6qigky",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "muzubndkyi",
+      "group": null,
+      "round": 5,
+      "t1": "tz8bv73xt8",
+      "t2": "t2sriv3eye",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          21,
+          18
+        ],
+        [
+          21,
+          14
+        ],
+        [
+          21,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "mf2lnx7kyi",
+      "group": null,
+      "round": 5,
+      "t1": "t2qn28go9l",
+      "t2": "t3e15baivf",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "migskqckyi",
+      "group": null,
+      "round": 5,
+      "t1": "td70qqc1vf",
+      "t2": "tjsw6qigky",
+      "all": true,
+      "draw": false,
+      "games": [
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  ],
   "bracket": null,
   "history": [
     {

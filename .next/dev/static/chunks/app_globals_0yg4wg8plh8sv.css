@@ -889,6 +889,10 @@ button {
   opacity: .35;
 }
 
+.sc.saved {
+  cursor: pointer;
+}
+
 .gw {
   text-align: center;
   background: #ffffff0d;

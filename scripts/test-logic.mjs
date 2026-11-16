@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf, canFormTeam, unassignedPlayers, customGroupNames, groupWarnings, findScoreEdits } from '../lib/logic.js';
-import { checkMaster, isLocked, recordFailure, clearFailures } from '../lib/master.js';
+import { computeStandings, evalMatch, scoreIssue, groupCaps, makeBracket, resolveBracket, seedOrder, ruleCfg, presetOf, canFormTeam, unassignedPlayers, customGroupNames, groupWarnings, findScoreEdits, findProtectedChanges, needsMaster } from '../lib/logic.js';
+import { checkMaster, isLocked, recordFailure, clearFailures, hashPassword, verifyHash, validateNewPassword, adminSecretOk } from '../lib/master.js';
+import { verifyMaster, setMasterPassword, readRecord } from '../lib/masterStore.js';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { validate } from '../lib/store.js';
 import { SEED_ENTRY } from '../lib/seed.js';
 
@@ -133,4 +137,66 @@ console.log('all logic tests passed');
   clearFailures('k');
   assert.equal(isLocked('k', t + 10), false);
   console.log('✓ master password check + attempt lockout');
+}
+
+// master password: reset / finish / history delete
+{
+  const doc = (stage, history = [], games = [[null, null]]) => ({ stage, history: history.map((id) => ({ id })), matches: [{ id: 'm1', games }], bracket: null });
+  const chk = (a, b) => needsMaster(findProtectedChanges(a, b));
+  assert.equal(chk(doc('group'), doc('setup')), true, 'reset from group');
+  assert.equal(chk(doc('knockout'), doc('setup', ['h1'])), true, 'reset/finish from knockout (archives to history)');
+  assert.equal(chk(doc('setup'), doc('setup')), false, 'untouched setup reset is free');
+  assert.equal(chk(doc('setup'), doc('group')), false, 'starting a tournament is free');
+  assert.equal(chk(doc('group', ['h1', 'h2']), doc('group', ['h1'])), true, 'history entry deleted');
+  assert.deepEqual(findProtectedChanges(doc('group', ['h1', 'h2']), doc('group', ['h1'])).historyRemoved, ['h2']);
+  assert.equal(chk(doc('group', ['h1']), doc('group', ['h1', 'h2'])), false, 'history entry added is free');
+  assert.equal(chk(doc('group', [], [[11, 7]]), doc('group', [], [[11, 9]])), true, 'score edit still flagged');
+  assert.equal(chk(doc('group', [], [[null, null]]), doc('group', [], [[11, 9]])), false, 'first score entry is free');
+  assert.equal(chk(null, doc('setup')), false, 'no stored doc');
+  assert.equal(needsMaster(undefined), false);
+  console.log('✓ findProtectedChanges: reset/finish/history-delete gated, additions and first entry free');
+}
+
+// changeable master password: hashing, validation, secret URL, stored record vs env bootstrap
+{
+  const a = await hashPassword('correct horse');
+  const b = await hashPassword('correct horse');
+  assert.equal(await verifyHash('correct horse', a), true);
+  assert.equal(await verifyHash('wrong horse', a), false);
+  assert.notEqual(a.hash, b.hash, 'salted: same password hashes differently');
+  assert.ok(!JSON.stringify(a).includes('correct horse'), 'plain password is never stored');
+
+  assert.equal(validateNewPassword('short', 'short', 'x'), 'password_too_short');
+  assert.equal(validateNewPassword('x'.repeat(129), undefined, 'x'), 'password_too_long');
+  assert.equal(validateNewPassword('longenough1', 'different1', 'x'), 'password_mismatch');
+  assert.equal(validateNewPassword('51234567', '51234567', '51234567'), 'same_as_current');
+  assert.equal(validateNewPassword('longenough1', 'longenough1', '51234'), null);
+
+  const secret = 'a'.repeat(24);
+  assert.equal(adminSecretOk(secret, { MASTER_ADMIN_PATH: secret }), true);
+  assert.equal(adminSecretOk('b'.repeat(24), { MASTER_ADMIN_PATH: secret }), false);
+  assert.equal(adminSecretOk(secret, {}), false, 'unset env disables the page');
+  assert.equal(adminSecretOk('input', { MASTER_ADMIN_PATH: 'input' }), true, 'any length is accepted');
+  assert.equal(adminSecretOk('', { MASTER_ADMIN_PATH: '' }), false, 'empty env disables the page');
+  assert.equal(adminSecretOk('', { MASTER_ADMIN_PATH: '  ' }), false, 'blank env disables the page');
+  console.log('✓ hashing, new-password rules, secret URL check');
+
+  const dir = mkdtempSync(join(tmpdir(), 'tt-master-'));
+  process.env.MASTER_FILE = join(dir, 'master.json');
+  delete process.env.BLOB_READ_WRITE_TOKEN;
+  const env = { NODE_ENV: 'production', MASTER_PASSWORD: '51234' };
+  assert.equal(await readRecord(), null);
+  assert.equal((await verifyMaster('51234', env)).ok, true, 'env bootstrap works before any change');
+  assert.equal((await verifyMaster('nope', env)).status, 403);
+  assert.equal((await verifyMaster('x', { NODE_ENV: 'production' })).status, 503, 'nothing configured fails closed');
+  await setMasterPassword('brand new pass');
+  assert.equal((await verifyMaster('brand new pass', env)).ok, true, 'new password works');
+  assert.equal((await verifyMaster('51234', env)).error, 'master_password_invalid', 'old env password no longer works');
+  assert.equal((await verifyMaster('', env)).error, 'master_password_required');
+  assert.ok(!readFileSync(process.env.MASTER_FILE, 'utf8').includes('brand new pass'), 'file holds only a hash');
+  rmSync(process.env.MASTER_FILE);
+  assert.equal((await verifyMaster('51234', env)).ok, true, 'deleting the record recovers the env password');
+  rmSync(dir, { recursive: true });
+  delete process.env.MASTER_FILE;
+  console.log('✓ stored hash overrides env bootstrap; recovery by deleting the record');
 }

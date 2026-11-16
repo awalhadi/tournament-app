@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** Asks for the master password and verifies it on the server before resolving. */
-export default function MasterPrompt({ warn, onDone }) {
+export default function MasterPrompt({ title, text, warn, onDone }) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -37,8 +37,8 @@ export default function MasterPrompt({ warn, onDone }) {
   return (
     <div className="modal" onClick={(e) => e.target === e.currentTarget && onDone(null)} onKeyDown={(e) => e.key === 'Escape' && onDone(null)}>
       <form className="modal-c" onSubmit={submit} autoComplete="off">
-        <h3>Master password required</h3>
-        <p>This score is already saved. Enter the master password to change it.{warn ? `\n\n${warn}` : ''}</p>
+        <h3>{title || 'Master password required'}</h3>
+        <p>{text || 'This score is already saved. Enter the master password to change it.'}{warn ? `\n\n${warn}` : ''}</p>
         <div className="field">
           <label htmlFor="master-pw">Master password</label>
           <input id="master-pw" ref={ref} className="input" type="password" autoComplete="off" value={pw} onChange={(e) => setPw(e.target.value)} aria-invalid={!!err} />
