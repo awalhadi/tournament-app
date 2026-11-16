@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { checkMaster, clearFailures, isLocked, recordFailure } from '../../../lib/master';
+import { clearFailures, isLocked, recordFailure } from '../../../lib/master';
+import { verifyMaster } from '../../../lib/masterStore';
 import { COOKIE } from '../../../lib/session';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +11,7 @@ export async function POST(req) {
   if (isLocked(key)) return NextResponse.json({ ok: false, error: 'too_many_attempts' }, { status: 429 });
   let body = {};
   try { body = await req.json(); } catch {}
-  const c = checkMaster(String(body.password || ''));
+  const c = await verifyMaster(String(body.password || ''));
   if (!c.ok) {
     if (c.status === 403) { recordFailure(key); await new Promise((r) => setTimeout(r, 700)); }
     return NextResponse.json({ ok: false, error: c.error }, { status: c.status });

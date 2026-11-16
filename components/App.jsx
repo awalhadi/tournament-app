@@ -135,7 +135,7 @@ export default function App() {
   // The server refused a score edit (missing/expired master password): drop the local change, show the saved data.
   useEffect(() => {
     onDenied(async (code) => {
-      toast(code === 'too_many_attempts' ? 'Too many wrong attempts. Try again later.' : 'Score change refused: master password required', 'err');
+      toast(code === 'too_many_attempts' ? 'Too many wrong attempts. Try again later.' : 'Change refused: master password required', 'err');
       const remote = await loadRemote();
       if (remote.data) {
         Sref.current = remote.data;
@@ -144,6 +144,18 @@ export default function App() {
       }
     });
   }, [toast]);
+
+  /** Always asks for the master password (verified on the server). Resolves true once unlocked, false if cancelled. */
+  const requireMaster = useCallback(
+    async (opts) => {
+      const pw = await new Promise((resolve) => setPwPrompt({ ...opts, resolve }));
+      setPwPrompt(null);
+      if (!pw) return false;
+      setMaster(pw, UNLOCK_MS); // kept in memory so the debounced save can send it
+      return true;
+    },
+    []
+  );
 
   const A = useMemo(() => {
     // Team list changed. Spin mode: regroup from scratch. Custom mode: keep deliberate manual
@@ -414,20 +426,17 @@ export default function App() {
         if (!edited.length) return mutate((d) => applyScore(d, id, ko, g, s, val));
         if (!edited.every((m) => (unlocked.current.get(m) || 0) > Date.now())) {
           const also = edited.filter((m) => m !== id).length;
-          const pw = await new Promise((resolve) =>
-            setPwPrompt({ resolve, warn: also ? 'Changing this result also clears the dependent knockout scores.' : '' })
-          );
-          setPwPrompt(null);
-          if (!pw) return; // cancelled → cell falls back to the saved value
-          setMaster(pw, UNLOCK_MS);
+          const ok = await requireMaster({ warn: also ? 'Changing this result also clears the dependent knockout scores.' : '' });
+          if (!ok) return; // cancelled → cell falls back to the saved value
           edited.forEach((m) => unlocked.current.set(m, Date.now() + UNLOCK_MS));
           toast('Unlocked for 5 minutes');
         }
         mutate((d) => applyScore(d, id, ko, g, s, val));
       },
-      finish: () => {
+      finish: async () => {
         const d = Sref.current;
         if (!L.championOf(d)) return;
+        if (!(await requireMaster({ title: 'Finish tournament', text: 'This saves the tournament to History and resets teams and scores. Enter the master password to continue.' }))) return;
         replace(fresh(d, [...d.history, makeEntry(d)]));
         patchUi({ tab: 'history', histView: null, lastPick: null });
         toast('Saved to History! Teams reset — all players kept');
@@ -442,6 +451,7 @@ export default function App() {
         if (!ok) return;
         const d = Sref.current;
         const started = d.stage !== 'setup';
+        if (started && !(await requireMaster({ title: 'Reset tournament data', text: 'This archives the current tournament to History and clears teams and scores. Enter the master password to continue.' }))) return;
         replace(fresh(d, started ? [...d.history, makeEntry(d)] : d.history));
         patchUi({ tab: 'setup', lastPick: null });
         toast(started ? 'Saved to History & reset' : 'Reset complete');
@@ -451,7 +461,9 @@ export default function App() {
       setHistTab: (histTab) => patchUi({ histTab }),
       delHist: async (id) => {
         const ok = await ask({ title: 'Delete this tournament?', text: 'Its saved teams, scores and bracket will be removed permanently.', ok: 'Delete', danger: true });
-        if (ok) mutate((d) => (d.history = d.history.filter((h) => h.id !== id)));
+        if (!ok) return;
+        if (!(await requireMaster({ title: 'Delete saved tournament', text: 'This permanently removes the saved results. Enter the master password to continue.' }))) return;
+        mutate((d) => (d.history = d.history.filter((h) => h.id !== id)));
       },
       logout: async () => {
         try { await fetch('/api/logout', { method: 'POST' }); } catch {}
@@ -466,6 +478,7 @@ export default function App() {
           const data = validate(JSON.parse(await file.text()));
           const ok = await ask({ title: 'Load this file?', text: 'It will replace the current tournament data.', ok: 'Load' });
           if (!ok) return;
+          if (L.needsMaster(L.findProtectedChanges(Sref.current, data)) && !(await requireMaster({ title: 'Replace tournament data', text: 'This file replaces saved scores, stage or History. Enter the master password to continue.' }))) return;
           replace(data);
           patchUi({ tab: tabFor(data) });
           toast('Data loaded');
@@ -474,7 +487,7 @@ export default function App() {
         }
       },
     };
-  }, [mutate, replace, patchUi, toast, ask]);
+  }, [mutate, replace, patchUi, toast, ask, requireMaster]);
 
   if (!S) return null;
 
@@ -544,7 +557,7 @@ export default function App() {
         {toasts.map((t) => (<div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>))}
       </div>
 
-      {pwPrompt && <MasterPrompt warn={pwPrompt.warn} onDone={(pw) => pwPrompt.resolve(pw)} />}
+      {pwPrompt && <MasterPrompt title={pwPrompt.title} text={pwPrompt.text} warn={pwPrompt.warn} onDone={(pw) => pwPrompt.resolve(pw)} />}
 
       {modal && (
         <div className="modal" onClick={(e) => e.target === e.currentTarget && closeModal(false)}>

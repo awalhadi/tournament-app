@@ -1,11 +1,11 @@
 var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/data/route.js")
-R.c("server/chunks/node_modules_@vercel_oidc_dist_025poi9tx6jh5._.js")
+R.c("server/chunks/node_modules_@vercel_oidc_dist_09nypdpawubz_._.js")
 R.c("server/chunks/node_modules_next_dist_0n8t8lbwx5-a_._.js")
 R.c("server/chunks/node_modules_jose_dist_node_cjs_0-rrt0besk6e9._.js")
 R.c("server/chunks/node_modules_@vercel_cli-config_dist_index_0_ysb4rv0bbck.js")
 R.c("server/chunks/node_modules_undici_0w4wzo3995mb5._.js")
 R.c("server/chunks/node_modules_1wcgv6bo0cg2y._.js")
-R.c("server/chunks/[root-of-the-server]__0d3vz5ryjsvcj._.js")
+R.c("server/chunks/[root-of-the-server]__06ggd5rv2lim6._.js")
 R.c("server/chunks/_next-internal_server_app_api_data_route_actions_0j0w5ep7icmbp.js")
 R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/app/api/data/route.js [app-route] (ecmascript)\" } [app-route] (ecmascript)")
 module.exports=R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/app/api/data/route.js [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports
